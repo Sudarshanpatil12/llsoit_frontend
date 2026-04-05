@@ -111,38 +111,41 @@ const AlumniRegistration = () => {
   const css = `
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    /* ── Same grid bg as Login & AlumniPortal ── */
     .ar-page {
       min-height: 100vh;
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Arial, sans-serif;
       display: flex;
       align-items: flex-start;
       justify-content: center;
-      padding: 40px 16px 60px;
+      padding: 48px 16px 72px;
       position: relative;
-      background-color: #eef2f7;
+      background-color: #edf3f8;
       background-image:
-        linear-gradient(rgba(10, 74, 122, 0.07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(10, 74, 122, 0.07) 1px, transparent 1px);
-      background-size: 32px 32px;
+        radial-gradient(circle at top left, rgba(10, 74, 122, 0.14), transparent 26%),
+        linear-gradient(rgba(10, 74, 122, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(10, 74, 122, 0.04) 1px, transparent 1px);
+      background-size: auto, 30px 30px, 30px 30px;
     }
 
     .ar-page::before {
       content: '';
       position: fixed; inset: 0;
-      background: radial-gradient(ellipse 80% 80% at 50% 40%, transparent 40%, rgba(10,74,122,0.06) 100%);
+      background:
+        radial-gradient(circle at bottom right, rgba(230, 126, 34, 0.08), transparent 22%),
+        radial-gradient(ellipse 80% 80% at 50% 40%, transparent 42%, rgba(10,74,122,0.04) 100%);
       pointer-events: none; z-index: 0;
     }
 
     .ar-card {
       position: relative; z-index: 1;
-      width: 100%; max-width: 780px;
-      background: white;
-      border-radius: 12px; overflow: hidden;
+      width: 100%; max-width: 820px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 24px; overflow: hidden;
+      border: 1px solid rgba(148, 163, 184, 0.2);
       box-shadow:
-        0 1px 0 rgba(10,74,122,0.08),
-        0 4px 6px rgba(0,0,0,0.04),
-        0 12px 32px rgba(10,74,122,0.10);
+        0 20px 45px rgba(15, 23, 42, 0.10),
+        0 8px 18px rgba(10, 74, 122, 0.06);
+      backdrop-filter: blur(10px);
       animation: fadeUp 0.4s ease both;
     }
 
@@ -151,84 +154,47 @@ const AlumniRegistration = () => {
       to   { opacity: 1; transform: translateY(0); }
     }
 
-    /* ── Header: same navy + orange stripe as Login/Portal ── */
     .ar-header {
-      background: #0a4a7a;
-      padding: 22px 32px;
+      background:
+        linear-gradient(135deg, #0b3b60 0%, #13557c 58%, #0f766e 100%);
+      padding: 28px 32px;
       display: flex; align-items: center;
       justify-content: space-between; gap: 16px;
-      border-bottom: 3px solid #e67e22;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
     }
 
     .ar-header-left { display: flex; align-items: center; gap: 12px; }
 
     .ar-icon {
-      width: 42px; height: 42px; border-radius: 8px;
-      background: #e67e22;
+      width: 48px; height: 48px; border-radius: 14px;
+      background: rgba(255,255,255,0.16);
       display: flex; align-items: center; justify-content: center;
-      font-size: 20px; flex-shrink: 0;
+      font-size: 22px; flex-shrink: 0;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.18);
     }
 
-    .ar-title { font-size: 1.2rem; font-weight: 700; color: white; line-height: 1.3; }
-    .ar-subtitle { font-size: 0.78rem; color: rgba(255,255,255,0.72); margin-top: 2px; }
+    .ar-title { font-size: 1.35rem; font-weight: 800; color: white; line-height: 1.2; }
+    .ar-subtitle { font-size: 0.84rem; color: rgba(255,255,255,0.76); margin-top: 6px; }
 
-    .ar-login-pill { font-size: 0.78rem; color: rgba(255,255,255,0.72); white-space: nowrap; }
-    .ar-login-pill a { color: #fbbf24; font-weight: 600; text-decoration: none; margin-left: 4px; }
+    .ar-login-pill {
+      font-size: 0.8rem;
+      color: rgba(255,255,255,0.78);
+      white-space: nowrap;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.10);
+      border: 1px solid rgba(255,255,255,0.14);
+    }
+    .ar-login-pill a { color: #fde68a; font-weight: 700; text-decoration: none; margin-left: 4px; }
     .ar-login-pill a:hover { text-decoration: underline; }
 
-    /* ── Progress steps ── */
-    .ar-steps {
-      display: flex;
-      background: #f0f6ff;
-      border-bottom: 1px solid #dbeafe;
-      padding: 0;
-    }
-
-    .ar-step {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 7px;
-      padding: 10px 8px;
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: #94a3b8;
-      border-right: 1px solid #dbeafe;
-      transition: color 0.2s;
-    }
-
-    .ar-step:last-child { border-right: none; }
-
-    .ar-step.active {
-      color: #0a4a7a;
-      background: white;
-      border-bottom: 2px solid #0a4a7a;
-      margin-bottom: -1px;
-    }
-
-    .ar-step-num {
-      width: 20px; height: 20px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.7rem; font-weight: 700;
-      background: #e2e8f0; color: #94a3b8;
-      flex-shrink: 0;
-      transition: all 0.2s;
-    }
-
-    .ar-step.active .ar-step-num {
-      background: #0a4a7a; color: white;
-    }
-
-    /* ── Body ── */
-    .ar-body { padding: 26px 32px 28px; }
+    .ar-body { padding: 30px 32px 28px; }
 
     .ar-error {
       background: #fee2e2; border: 1px solid #fca5a5; color: #b91c1c;
-      border-radius: 6px; padding: 10px 12px; font-size: 0.875rem;
+      border-radius: 14px; padding: 12px 14px; font-size: 0.9rem;
       display: flex; align-items: center; gap: 8px;
-      margin-bottom: 18px; animation: shake 0.3s ease;
+      margin-bottom: 20px; animation: shake 0.3s ease;
     }
 
     @keyframes shake {
@@ -237,19 +203,21 @@ const AlumniRegistration = () => {
       50%      { transform: translateX(4px); }
     }
 
-    /* ── Section dividers ── */
     .ar-section {
       display: flex; align-items: center; gap: 10px;
-      margin: 22px 0 14px;
+      margin: 28px 0 16px;
     }
     .ar-section:first-child { margin-top: 0; }
-    .ar-section-line { flex: 1; height: 1px; background: #e5e7eb; }
+    .ar-section-line { flex: 1; height: 1px; background: linear-gradient(90deg, rgba(10,74,122,0.18), rgba(148,163,184,0.12)); }
     .ar-section-tag {
-      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.09em;
+      font-size: 0.74rem; font-weight: 800; letter-spacing: 0.09em;
       text-transform: uppercase; color: #0a4a7a; white-space: nowrap;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: #eef6ff;
+      border: 1px solid #dbeafe;
     }
 
-    /* ── Grid ── */
     .ar-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
     .ar-full { grid-column: 1 / -1; }
     .ar-field { display: flex; flex-direction: column; gap: 5px; }
@@ -259,19 +227,18 @@ const AlumniRegistration = () => {
       letter-spacing: 0.05em; text-transform: uppercase;
     }
 
-    /* ── Inputs ── */
     .ar-input, .ar-select, .ar-textarea {
-      width: 100%; padding: 9px 12px;
-      border-radius: 6px; border: 1px solid #d1d5db;
-      font-size: 0.9rem; font-family: Arial, sans-serif;
-      color: #111827; background: #f9fafb;
-      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      width: 100%; padding: 12px 14px;
+      border-radius: 14px; border: 1px solid #d7e0e8;
+      font-size: 0.95rem; font-family: 'Segoe UI', Arial, sans-serif;
+      color: #111827; background: #f8fbfd;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
       outline: none; -webkit-appearance: none; appearance: none;
     }
 
     .ar-input:focus, .ar-select:focus, .ar-textarea:focus {
-      border-color: #0a4a7a; background: white;
-      box-shadow: 0 0 0 3px rgba(10,74,122,0.10);
+      border-color: #0f766e; background: white;
+      box-shadow: 0 0 0 4px rgba(15,118,110,0.10);
     }
 
     .ar-input::placeholder, .ar-textarea::placeholder { color: #9ca3af; }
@@ -284,9 +251,8 @@ const AlumniRegistration = () => {
       pointer-events: none; font-size: 11px;
     }
 
-    /* ── Password strength ── */
     .ar-pwd-bar-wrap {
-      height: 3px; background: #e5e7eb;
+      height: 5px; background: #e5e7eb;
       border-radius: 99px; overflow: hidden; margin-top: 5px;
     }
     .ar-pwd-bar {
@@ -297,12 +263,12 @@ const AlumniRegistration = () => {
 
     .ar-photo-box {
       display: flex; align-items: center; gap: 14px;
-      padding: 14px; border: 1px dashed #cbd5e1; border-radius: 10px;
-      background: #f8fafc;
+      padding: 16px; border: 1px dashed #cbd5e1; border-radius: 18px;
+      background: linear-gradient(180deg, #f8fbfd 0%, #f3f8fc 100%);
     }
     .ar-photo-preview {
-      width: 84px; height: 84px; border-radius: 18px;
-      overflow: hidden; background: linear-gradient(135deg, #0a4a7a, #1e6ba8);
+      width: 92px; height: 92px; border-radius: 22px;
+      overflow: hidden; background: linear-gradient(135deg, #0b3b60, #0f766e);
       display: flex; align-items: center; justify-content: center;
       color: white; font-size: 0.75rem; font-weight: 700; text-align: center;
       flex-shrink: 0;
@@ -312,7 +278,7 @@ const AlumniRegistration = () => {
     }
     .ar-upload-btn {
       position: relative; display: inline-flex; align-items: center; justify-content: center;
-      padding: 9px 14px; border-radius: 8px; background: #0a4a7a; color: white;
+      padding: 10px 16px; border-radius: 10px; background: #0b3b60; color: white;
       font-size: 0.85rem; font-weight: 600; cursor: pointer; overflow: hidden;
     }
     .ar-upload-btn input {
@@ -322,42 +288,41 @@ const AlumniRegistration = () => {
       font-size: 0.75rem; color: #6b7280; line-height: 1.5; margin-top: 6px;
     }
 
-    /* ── Info tip box ── */
     .ar-tip {
       display: flex; align-items: flex-start; gap: 10px;
-      background: #f0f6ff;
-      border: 1px solid #dbeafe;
-      border-left: 4px solid #0a4a7a;
-      border-radius: 6px;
-      padding: 11px 14px;
-      font-size: 0.8rem; color: #1e3a5f;
+      background: linear-gradient(180deg, #f0f8ff 0%, #ecf7f5 100%);
+      border: 1px solid #d8edf3;
+      border-left: 4px solid #0f766e;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 0.84rem; color: #1e3a5f;
       line-height: 1.6;
       margin-bottom: 20px;
     }
     .ar-tip-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
 
-    /* ── Footer ── */
     .ar-footer {
       display: flex; align-items: center; justify-content: space-between;
-      padding: 15px 32px 22px;
+      padding: 18px 32px 24px;
       border-top: 1px solid #e5e7eb;
-      background: #f8fafc;
+      background: linear-gradient(180deg, #fafcff 0%, #f4f8fb 100%);
       gap: 12px;
     }
 
     .ar-footer-note { font-size: 0.78rem; color: #9ca3af; }
 
     .ar-submit {
-      background: #0a4a7a; color: white; border: none;
-      padding: 10px 28px; border-radius: 6px;
-      font-size: 0.9rem; font-weight: 600; font-family: Arial, sans-serif;
+      background: linear-gradient(135deg, #0b3b60 0%, #0f766e 100%);
+      color: white; border: none;
+      padding: 12px 30px; border-radius: 14px;
+      font-size: 0.95rem; font-weight: 700; font-family: 'Segoe UI', Arial, sans-serif;
       cursor: pointer; display: flex; align-items: center; gap: 6px;
-      box-shadow: 0 4px 6px -1px rgba(10,74,122,0.25);
+      box-shadow: 0 12px 24px rgba(11,59,96,0.22);
       transition: background-color 0.2s ease, transform 0.2s ease;
     }
     .ar-submit:hover:not(:disabled) {
-      background: #082e4d; transform: translateY(-2px);
-      box-shadow: 0 6px 12px rgba(10,74,122,0.3);
+      transform: translateY(-2px);
+      box-shadow: 0 16px 28px rgba(11,59,96,0.28);
     }
     .ar-submit:active:not(:disabled) { transform: translateY(0); }
     .ar-submit:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -371,12 +336,11 @@ const AlumniRegistration = () => {
 
     @media (max-width: 600px) {
       .ar-page { background-size: 20px 20px; }
-      .ar-header { padding: 16px 18px; flex-wrap: wrap; }
+      .ar-header { padding: 18px 18px; flex-wrap: wrap; }
       .ar-body { padding: 18px 18px 20px; }
       .ar-footer { padding: 12px 18px 18px; flex-wrap: wrap; }
       .ar-grid { grid-template-columns: 1fr; }
       .ar-full { grid-column: 1; }
-      .ar-step span { display: none; }
       .ar-submit { width: 100%; justify-content: center; }
     }
   `;
