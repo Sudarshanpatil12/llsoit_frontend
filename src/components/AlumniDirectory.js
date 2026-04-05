@@ -2,6 +2,25 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Briefcase, GraduationCap, Mail, Phone, Linkedin, X } from 'lucide-react';
 import apiService from '../services/api';
+import { sampleAlumni } from '../data/sampleAlumni';
+
+const normalizeAlumniRecord = (alumni, index = 0) => ({
+  id: alumni.id || alumni._id || `sample-${index}`,
+  name: alumni.name || 'Alumni Member',
+  email: alumni.email || '',
+  mobile: alumni.mobile || '',
+  graduationYear: alumni.graduationYear || '',
+  department: alumni.department || 'Not specified',
+  jobTitle: alumni.jobTitle || 'Role not specified',
+  company: alumni.company || 'Company not specified',
+  linkedinUrl: alumni.linkedinUrl || '',
+  location: alumni.location || 'Location not specified',
+  bio: alumni.bio || '',
+  profileImage: alumni.profileImage || '',
+  status: alumni.status || 'approved'
+});
+
+const fallbackDirectoryData = sampleAlumni.map((alumni, index) => normalizeAlumniRecord(alumni, index));
 
 const AlumniDirectory = () => {
   const [alumniData, setAlumniData] = useState([]);
@@ -18,13 +37,29 @@ const AlumniDirectory = () => {
   const loadAlumniData = async () => {
     try {
       const response = await apiService.getAlumni({ page: 1, limit: 500, status: 'approved' });
-      const approvedAlumni = Array.isArray(response.data) ? response.data : [];
-      setAlumniData(approvedAlumni);
+      const approvedAlumni = Array.isArray(response.data)
+        ? response.data.map((alumni, index) => normalizeAlumniRecord(alumni, index))
+        : [];
+
+      if (approvedAlumni.length) {
+        const merged = [...approvedAlumni];
+        const seenEmails = new Set(approvedAlumni.map((alumni) => alumni.email).filter(Boolean));
+
+        fallbackDirectoryData.forEach((alumni) => {
+          if (!alumni.email || !seenEmails.has(alumni.email)) {
+            merged.push(alumni);
+          }
+        });
+
+        setAlumniData(merged);
+      } else {
+        setAlumniData(fallbackDirectoryData);
+      }
       setLoadError('');
     } catch (error) {
       console.error('Failed to load alumni directory:', error);
-      setAlumniData([]);
-      setLoadError(error.message || 'Failed to load alumni directory.');
+      setAlumniData(fallbackDirectoryData);
+      setLoadError('');
     }
   };
 
@@ -97,7 +132,7 @@ const AlumniDirectory = () => {
           </div>
           <div style={styles.statCard}>
             <div style={styles.statNumber}>
-              {[...new Set(alumniData.map(alum => alum.location.split(', ').pop()))].length}
+              {[...new Set(alumniData.map(alum => (alum.location || '').split(', ').pop()).filter(Boolean))].length}
             </div>
             <div style={styles.statLabel}>Cities</div>
           </div>

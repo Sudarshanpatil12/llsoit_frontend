@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   AlertCircle,
   BarChart3,
+  BriefcaseBusiness,
   CheckCircle,
   Clock3,
   Download,
@@ -42,7 +43,9 @@ const editableFields = [
   'enrollmentNumber',
   'skills',
   'achievements',
-  'experience'
+  'experience',
+  'careerHistory',
+  'profileImage'
 ];
 
 const normalizeList = (value) => {
@@ -83,6 +86,7 @@ const normalizeAlumni = (alumni) => ({
   skills: Array.isArray(alumni.skills) ? alumni.skills : [],
   achievements: Array.isArray(alumni.achievements) ? alumni.achievements : [],
   experience: Array.isArray(alumni.experience) ? alumni.experience : [],
+  careerHistory: Array.isArray(alumni.careerHistory) ? alumni.careerHistory : [],
   pendingUpdates: alumni.pendingUpdates || null,
   pendingUpdateStatus: alumni.pendingUpdateStatus || 'none',
   isVerified: Boolean(alumni.isVerified)
@@ -90,6 +94,7 @@ const normalizeAlumni = (alumni) => ({
 
 const AdminPanel = () => {
   const [alumniData, setAlumniData] = useState([]);
+  const [jobsData, setJobsData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState(emptyFilters);
   const [activeTab, setActiveTab] = useState('registrations');
@@ -134,13 +139,30 @@ const AdminPanel = () => {
     }
   }, []);
 
+  const loadJobsData = useCallback(async () => {
+    try {
+      const response = await apiService.getAdminJobs({ page: 1, limit: 500 });
+      setJobsData(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error('Failed to load jobs data:', error);
+    }
+  }, []);
+
   useEffect(() => {
     loadAlumniData();
-  }, [loadAlumniData]);
+    loadJobsData();
+  }, [loadAlumniData, loadJobsData]);
 
   useEffect(() => () => {
     clearTimeout(notificationTimeoutRef.current);
   }, []);
+
+  const refreshAllData = async ({ silent = false } = {}) => {
+    await Promise.all([
+      loadAlumniData({ silent }),
+      loadJobsData()
+    ]);
+  };
 
   const departmentOptions = useMemo(() => (
     [...new Set(alumniData.map((item) => item.department).filter(Boolean))].sort()
@@ -158,6 +180,13 @@ const AdminPanel = () => {
     updatesPending: alumniData.filter((item) => item.pendingUpdateStatus === 'pending').length,
     verified: alumniData.filter((item) => item.isVerified).length
   }), [alumniData]);
+
+  const jobStats = useMemo(() => ({
+    total: jobsData.length,
+    pending: jobsData.filter((item) => item.status === 'pending').length,
+    approved: jobsData.filter((item) => item.status === 'approved').length,
+    rejected: jobsData.filter((item) => item.status === 'rejected').length
+  }), [jobsData]);
 
   const filteredData = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -342,6 +371,17 @@ const AdminPanel = () => {
       showNotification('Alumni deleted successfully.', 'success');
     } catch (error) {
       showNotification(error.message || 'Failed to delete alumni.', 'error');
+    }
+  };
+
+  const handleJobStatusUpdate = async (id, status) => {
+    try {
+      const response = await apiService.updateAdminJobStatus(id, status);
+      const updated = response.data;
+      setJobsData((current) => current.map((item) => (item._id === updated._id ? updated : item)));
+      showNotification(`Job ${status} successfully.`, status === 'approved' ? 'success' : 'error');
+    } catch (error) {
+      showNotification(error.message || 'Failed to update job status.', 'error');
     }
   };
 
@@ -920,7 +960,7 @@ const AdminPanel = () => {
             </p>
           </div>
           <div className="admin-hero-actions">
-            <button className="admin-button admin-button-secondary" onClick={() => loadAlumniData({ silent: true })}>
+            <button className="admin-button admin-button-secondary" onClick={() => refreshAllData({ silent: true })}>
               <RefreshCw size={18} className={isRefreshing ? 'spin' : ''} style={isRefreshing ? { animation: 'spin 1s linear infinite' } : undefined} />
               Refresh
             </button>
@@ -952,12 +992,20 @@ const AdminPanel = () => {
             <div className="admin-stat-icon" style={{ background: '#ede9fe', color: '#6d28d9' }}><ShieldCheck size={24} /></div>
             <div><strong>{stats.verified}</strong><span>Verified alumni</span></div>
           </div>
+          <div className="admin-stat-card">
+            <div className="admin-stat-icon" style={{ background: '#e0f2fe', color: '#0369a1' }}><BriefcaseBusiness size={24} /></div>
+            <div><strong>{jobStats.pending}</strong><span>Pending job posts</span></div>
+          </div>
         </section>
 
         <div className="admin-tabs">
           <button className={`admin-tab ${activeTab === 'registrations' ? 'active' : ''}`} onClick={() => setActiveTab('registrations')}>
             <Users size={18} />
             Registrations
+          </button>
+          <button className={`admin-tab ${activeTab === 'jobs' ? 'active' : ''}`} onClick={() => setActiveTab('jobs')}>
+            <BriefcaseBusiness size={18} />
+            Jobs
           </button>
           <button className={`admin-tab ${activeTab === 'analytics' ? 'active' : ''}`} onClick={() => setActiveTab('analytics')}>
             <BarChart3 size={18} />
@@ -1152,6 +1200,78 @@ const AdminPanel = () => {
                   <div>Try clearing the filters or refreshing the admin panel.</div>
                 </div>
               )}
+            </section>
+          </>
+        ) : activeTab === 'jobs' ? (
+          <>
+            <section className="admin-panel">
+              <div className="admin-toolbar-footer">
+                <div>
+                  <h2 style={{ margin: 0 }}>Job Approval Queue</h2>
+                  <p className="admin-muted" style={{ margin: '6px 0 0' }}>
+                    Alumni-submitted opportunities land here first. Approve them to publish on the jobs page.
+                  </p>
+                </div>
+                <div className="admin-segmented">
+                  <button type="button" className={searchTerm === '' ? 'active' : ''} onClick={() => setSearchTerm('')}>All jobs</button>
+                  <button type="button" onClick={() => setJobsData((current) => [...current].sort((a, b) => (a.status === 'pending' ? -1 : 1)))}>Prioritize pending</button>
+                </div>
+              </div>
+            </section>
+
+            <section className="admin-table-wrap">
+              <div className="admin-table-scroll">
+                <table className="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Role</th>
+                      <th>Company</th>
+                      <th>Submitted By</th>
+                      <th>Status</th>
+                      <th>Apply Link</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {jobsData.length ? jobsData.map((job) => (
+                      <tr key={job._id}>
+                        <td>
+                          <strong>{job.title}</strong>
+                          <div className="admin-muted">{job.location} • {job.type}</div>
+                        </td>
+                        <td>
+                          <strong>{job.company}</strong>
+                          <div className="admin-muted">{job.category || 'General'}</div>
+                        </td>
+                        <td>
+                          <strong>{job.submittedBy?.name || 'Alumni member'}</strong>
+                          <div className="admin-muted">{job.submittedBy?.email || 'No email available'}</div>
+                        </td>
+                        <td>{renderStatusPill(job.status)}</td>
+                        <td>
+                          <a href={job.applyLink} target="_blank" rel="noreferrer">Open link</a>
+                        </td>
+                        <td>
+                          <div className="admin-actions">
+                            <button className="admin-button admin-button-success" type="button" onClick={() => handleJobStatusUpdate(job._id, 'approved')}>
+                              Approve
+                            </button>
+                            <button className="admin-button admin-button-danger" type="button" onClick={() => handleJobStatusUpdate(job._id, 'rejected')}>
+                              Reject
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    )) : (
+                      <tr>
+                        <td colSpan="6">
+                          <div className="admin-empty" style={{ margin: 0 }}>No alumni job submissions yet.</div>
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </section>
           </>
         ) : (

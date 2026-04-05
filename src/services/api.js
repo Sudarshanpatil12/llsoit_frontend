@@ -142,6 +142,20 @@ class ApiService {
     return this.get(`/alumni/search/${encodeURIComponent(query)}?limit=${limit}`);
   }
 
+  async getJobs(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/jobs?${queryString}` : '/jobs';
+    return this.get(endpoint);
+  }
+
+  async createJob(jobData) {
+    return this.post('/jobs', jobData);
+  }
+
+  async getMyJobs() {
+    return this.get('/jobs/mine');
+  }
+
   async syncLinkedInData(linkedinUrl) {
     return this.post('/alumni/linkedin/sync', { linkedinUrl });
   }
@@ -216,6 +230,16 @@ class ApiService {
 
   async deleteAlumni(id) {
     return this.delete(`/admin/alumni/${id}`);
+  }
+
+  async getAdminJobs(params = {}) {
+    const queryString = new URLSearchParams(params).toString();
+    const endpoint = queryString ? `/admin/jobs?${queryString}` : '/admin/jobs';
+    return this.get(endpoint);
+  }
+
+  async updateAdminJobStatus(id, status, rejectionReason = '') {
+    return this.put(`/admin/jobs/${id}/status`, { status, rejectionReason });
   }
 
   async getAdminEvents(params = {}) {
