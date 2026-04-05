@@ -67,6 +67,18 @@ const getInitials = (name = '') => name
   .map((part) => part[0]?.toUpperCase() || '')
   .join('') || 'A';
 
+const normalizeCareerHistory = (items) => (
+  Array.isArray(items)
+    ? items.filter((item) => item && (item.company || item.title || item.summary))
+    : []
+);
+
+const formatCareerRange = (item) => {
+  const start = item.startDate || 'Start not set';
+  const end = item.isCurrent ? 'Present' : (item.endDate || 'End not set');
+  return `${start} - ${end}`;
+};
+
 const normalizeAlumni = (alumni) => ({
   ...alumni,
   id: alumni._id || alumni.id,
@@ -86,7 +98,7 @@ const normalizeAlumni = (alumni) => ({
   skills: Array.isArray(alumni.skills) ? alumni.skills : [],
   achievements: Array.isArray(alumni.achievements) ? alumni.achievements : [],
   experience: Array.isArray(alumni.experience) ? alumni.experience : [],
-  careerHistory: Array.isArray(alumni.careerHistory) ? alumni.careerHistory : [],
+  careerHistory: normalizeCareerHistory(alumni.careerHistory),
   pendingUpdates: alumni.pendingUpdates || null,
   pendingUpdateStatus: alumni.pendingUpdateStatus || 'none',
   isVerified: Boolean(alumni.isVerified)
@@ -851,6 +863,58 @@ const AdminPanel = () => {
       font-size: 0.84rem;
       font-weight: 600;
     }
+    .admin-timeline {
+      display: grid;
+      gap: 16px;
+      margin-top: 10px;
+    }
+    .admin-timeline-item {
+      display: grid;
+      grid-template-columns: 48px 20px 1fr;
+      gap: 12px;
+      align-items: start;
+    }
+    .admin-timeline-logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #0b3b60, #0f766e);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+    }
+    .admin-timeline-rail {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100%;
+      padding-top: 6px;
+    }
+    .admin-timeline-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: #94a3b8;
+      flex-shrink: 0;
+    }
+    .admin-timeline-line {
+      width: 2px;
+      flex: 1;
+      background: #d7e0e8;
+      margin-top: 6px;
+    }
+    .admin-timeline-title {
+      font-weight: 700;
+      color: #102033;
+      margin-bottom: 4px;
+    }
+    .admin-timeline-meta {
+      color: #66788b;
+      font-size: 0.88rem;
+      line-height: 1.5;
+      margin-bottom: 8px;
+    }
     .admin-label {
       display: block;
       margin-bottom: 8px;
@@ -1382,10 +1446,68 @@ const AdminPanel = () => {
                   </div>
                 ) : <p>No experience entries added yet.</p>}
               </div>
+              <div className="admin-info-card" style={{ gridColumn: '1 / -1' }}>
+                <h4>Career history</h4>
+                {selectedAlumni.careerHistory.length ? (
+                  <div className="admin-timeline">
+                    {selectedAlumni.careerHistory.map((item, index) => (
+                      <div className="admin-timeline-item" key={`${item.company || 'company'}-${index}`}>
+                        <div className="admin-timeline-logo">{(item.company || 'C').slice(0, 1).toUpperCase()}</div>
+                        <div className="admin-timeline-rail">
+                          <div className="admin-timeline-dot" />
+                          {index !== selectedAlumni.careerHistory.length - 1 ? <div className="admin-timeline-line" /> : null}
+                        </div>
+                        <div>
+                          <div className="admin-timeline-title">{item.title || 'Role not provided'} at {item.company || 'Company not provided'}</div>
+                          <div className="admin-timeline-meta">{formatCareerRange(item)} • {item.location || 'Location not provided'}</div>
+                          {item.summary ? <p>{item.summary}</p> : <p>No role summary added.</p>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : <p>No career history added yet.</p>}
+              </div>
               {selectedAlumni.pendingUpdates && (
                 <div className="admin-info-card" style={{ gridColumn: '1 / -1' }}>
-                  <h4>Pending profile update payload</h4>
-                  <p>{JSON.stringify(selectedAlumni.pendingUpdates, null, 2)}</p>
+                  <h4>Pending profile changes</h4>
+                  {selectedAlumni.pendingUpdates.careerHistory ? (
+                    <>
+                      <p style={{ marginBottom: 10 }}>Career history changes waiting for approval:</p>
+                      <div className="admin-timeline">
+                        {normalizeCareerHistory(selectedAlumni.pendingUpdates.careerHistory).map((item, index, items) => (
+                          <div className="admin-timeline-item" key={`pending-${item.company || 'company'}-${index}`}>
+                            <div className="admin-timeline-logo">{(item.company || 'C').slice(0, 1).toUpperCase()}</div>
+                            <div className="admin-timeline-rail">
+                              <div className="admin-timeline-dot" />
+                              {index !== items.length - 1 ? <div className="admin-timeline-line" /> : null}
+                            </div>
+                            <div>
+                              <div className="admin-timeline-title">{item.title || 'Role not provided'} at {item.company || 'Company not provided'}</div>
+                              <div className="admin-timeline-meta">{formatCareerRange(item)} • {item.location || 'Location not provided'}</div>
+                              {item.summary ? <p>{item.summary}</p> : <p>No role summary added.</p>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : null}
+                  {selectedAlumni.pendingUpdates.skills ? (
+                    <>
+                      <p style={{ marginTop: 14, marginBottom: 8 }}><strong>Pending skills</strong></p>
+                      <div className="admin-chips">
+                        {selectedAlumni.pendingUpdates.skills.map((skill) => <span key={`pending-skill-${skill}`} className="admin-chip">{skill}</span>)}
+                      </div>
+                    </>
+                  ) : null}
+                  {selectedAlumni.pendingUpdates.experience ? (
+                    <>
+                      <p style={{ marginTop: 14, marginBottom: 8 }}><strong>Pending experience highlights</strong></p>
+                      <div className="admin-chips">
+                        {selectedAlumni.pendingUpdates.experience.map((item) => <span key={`pending-exp-${item}`} className="admin-chip">{item}</span>)}
+                      </div>
+                    </>
+                  ) : null}
+                  <p style={{ marginTop: 14, whiteSpace: 'pre-wrap' }}>{JSON.stringify(selectedAlumni.pendingUpdates, null, 2)}</p>
                 </div>
               )}
             </div>

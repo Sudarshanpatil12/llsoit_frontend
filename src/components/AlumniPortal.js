@@ -77,6 +77,7 @@ const AlumniPortal = () => {
   });
   const [jobForm, setJobForm] = useState(emptyJobForm);
   const [myJobs, setMyJobs] = useState([]);
+  const [companyJobs, setCompanyJobs] = useState([]);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
   const [savingProfile, setSavingProfile] = useState(false);
@@ -88,6 +89,22 @@ const AlumniPortal = () => {
       setMyJobs(Array.isArray(response.data) ? response.data : []);
     } catch (loadError) {
       console.error('Failed to load alumni jobs:', loadError);
+    }
+  };
+
+  const loadCompanyJobs = async (companyName) => {
+    if (!companyName) {
+      setCompanyJobs([]);
+      return;
+    }
+
+    try {
+      const response = await apiService.getJobs({ company: companyName, limit: 20 });
+      const nextJobs = Array.isArray(response.data) ? response.data : [];
+      setCompanyJobs(nextJobs);
+    } catch (loadError) {
+      console.error('Failed to load company jobs:', loadError);
+      setCompanyJobs([]);
     }
   };
 
@@ -129,6 +146,7 @@ const AlumniPortal = () => {
       }));
 
       loadMyJobs();
+      loadCompanyJobs(user.company || '');
     }
   }, [user, userType]);
 
@@ -714,7 +732,10 @@ const AlumniPortal = () => {
                 </div>
 
                 <div style={{ marginTop: 24 }}>
-                  <h2 style={{ marginBottom: 14 }}>Career History</h2>
+                  <h2 style={{ marginBottom: 10 }}>Edit Work Experience</h2>
+                  <p className="alumni-muted" style={{ marginBottom: 16 }}>
+                    Add each company, role, location, duration, and summary here. Once admin approves the update, the same experience timeline appears in the alumni directory.
+                  </p>
                   <div className="alumni-card-list">
                     {profileData.careerHistory.map((entry, index) => (
                       <div key={`career-entry-${index}`} className="alumni-job-card">
@@ -771,6 +792,37 @@ const AlumniPortal = () => {
                   </button>
                 </div>
               </form>
+            </section>
+
+            <section className="alumni-panel" style={{ marginTop: 20 }}>
+              <h2>Jobs in Your Company Network</h2>
+              <p className="alumni-muted" style={{ marginBottom: 16 }}>
+                Approved roles matching your current company appear here after you log in.
+              </p>
+              <div className="alumni-card-list">
+                {companyJobs.length ? companyJobs.map((job) => (
+                  <div key={`company-job-${job._id}`} className="alumni-job-card">
+                    <div className="alumni-job-top">
+                      <div>
+                        <strong>{job.title}</strong>
+                        <div className="alumni-muted">{job.company} • {job.location}</div>
+                      </div>
+                      <span className={`alumni-status ${job.status || 'approved'}`}>{job.type}</span>
+                    </div>
+                    <p className="alumni-muted">{job.description}</p>
+                    <div className="alumni-actions" style={{ marginTop: 12 }}>
+                      <span className="alumni-muted">{job.salaryLabel || 'Compensation discussed during hiring'}</span>
+                      <a className="alumni-button primary" href={job.applyLink} target="_blank" rel="noreferrer" style={{ textDecoration: 'none' }}>
+                        View job
+                      </a>
+                    </div>
+                  </div>
+                )) : (
+                  <p className="alumni-muted">
+                    No approved jobs are listed for {profileData.company || 'your company'} yet.
+                  </p>
+                )}
+              </div>
             </section>
 
             <section className="alumni-panel" style={{ marginTop: 20 }}>

@@ -39,6 +39,10 @@ const JobsPage = () => {
 
   const categories = useMemo(() => ['all', ...new Set(jobs.map((job) => job.category).filter(Boolean))], [jobs]);
   const locations = useMemo(() => ['all', ...new Set(jobs.map((job) => job.location).filter(Boolean))], [jobs]);
+  const featuredCompanies = useMemo(
+    () => [...new Set(jobs.map((job) => job.company).filter(Boolean))].slice(0, 6),
+    [jobs]
+  );
 
   const filteredJobs = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -138,6 +142,39 @@ const JobsPage = () => {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 18px;
+    }
+    .jobs-company-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 0 0 22px;
+    }
+    .jobs-company-chip {
+      padding: 9px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      color: #0b3b60;
+      font-weight: 700;
+    }
+    .jobs-stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+    .jobs-stat-card {
+      background: rgba(255,255,255,0.92);
+      border: 1px solid rgba(148, 163, 184, 0.24);
+      border-radius: 22px;
+      padding: 18px;
+      box-shadow: 0 16px 34px rgba(15, 23, 42, 0.07);
+    }
+    .jobs-stat-card strong {
+      display: block;
+      font-size: 1.9rem;
+      margin-bottom: 6px;
+      color: #0b3b60;
     }
     .jobs-card {
       padding: 20px;
@@ -243,6 +280,38 @@ const JobsPage = () => {
             {locations.map((item) => <option key={item} value={item}>{item === 'all' ? 'All locations' : item}</option>)}
           </select>
         </section>
+
+        {!loading && !error ? (
+          <>
+            <section className="jobs-stats">
+              <div className="jobs-stat-card">
+                <strong>{jobs.length}</strong>
+                <span>Total approved jobs</span>
+              </div>
+              <div className="jobs-stat-card">
+                <strong>{featuredCompanies.length}</strong>
+                <span>Companies hiring</span>
+              </div>
+              <div className="jobs-stat-card">
+                <strong>{categories.length - 1}</strong>
+                <span>Categories</span>
+              </div>
+            </section>
+
+            <div className="jobs-company-strip">
+              {featuredCompanies.map((company) => (
+                <button
+                  key={company}
+                  type="button"
+                  className="jobs-company-chip"
+                  onClick={() => setSearchTerm(company)}
+                >
+                  {company}
+                </button>
+              ))}
+            </div>
+          </>
+        ) : null}
 
         {loading ? <div className="jobs-empty">Loading opportunities...</div> : null}
         {error ? <div className="jobs-error">{error}</div> : null}

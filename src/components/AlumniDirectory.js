@@ -172,6 +172,8 @@ const AlumniDirectory = () => {
   };
 
   const selectedExperienceSections = selectedAlumni ? buildExperienceSections(selectedAlumni) : [];
+  const selectedSkills = Array.isArray(selectedAlumni?.skills) ? selectedAlumni.skills : [];
+  const selectedHighlights = Array.isArray(selectedAlumni?.experience) ? selectedAlumni.experience : [];
 
   return (
     <div style={styles.container}>
@@ -493,8 +495,34 @@ const AlumniDirectory = () => {
 
               {/* Bio Section */}
               <div style={styles.bioSection}>
-                <h3 style={styles.sectionTitle}>Professional Bio</h3>
+                <h3 style={styles.sectionTitle}>About</h3>
                 <p style={styles.bioText}>{selectedAlumni.bio || 'No professional bio added yet.'}</p>
+              </div>
+
+              <div style={styles.bioSection}>
+                <h3 style={styles.sectionTitle}>Skills</h3>
+                {selectedSkills.length ? (
+                  <div style={styles.skillChipRow}>
+                    {selectedSkills.map((skill) => (
+                      <span key={`${selectedAlumni.id}-${skill}`} style={styles.skillChip}>{skill}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={styles.bioText}>No skills listed yet.</p>
+                )}
+              </div>
+
+              <div style={styles.bioSection}>
+                <h3 style={styles.sectionTitle}>Highlights</h3>
+                {selectedHighlights.length ? (
+                  <div style={styles.highlightList}>
+                    {selectedHighlights.map((item) => (
+                      <div key={`${selectedAlumni.id}-${item}`} style={styles.highlightItem}>{item}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <p style={styles.bioText}>No experience highlights added yet.</p>
+                )}
               </div>
 
               {isOwnProfile && (
@@ -781,14 +809,15 @@ const styles = {
   },
   profilePanel: {
     backgroundColor: 'white',
-    borderRadius: '20px',
+    borderRadius: '26px',
     width: '100%',
-    maxWidth: '800px',
+    maxWidth: '920px',
     maxHeight: '90vh',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column',
     position: 'relative',
+    boxShadow: '0 24px 48px rgba(15, 23, 42, 0.24)',
   },
   closeButton: {
     position: 'absolute',
@@ -807,8 +836,8 @@ const styles = {
     zIndex: 10,
   },
   profileImageContainer: {
-    background: 'linear-gradient(135deg, #0a4a7a 0%, #1e6ba8 100%)',
-    padding: '40px',
+    background: 'linear-gradient(135deg, #0b3b60 0%, #145a86 62%, #0f766e 100%)',
+    padding: '42px 40px 34px',
     textAlign: 'center',
   },
   profileImage: {
@@ -835,9 +864,10 @@ const styles = {
     margin: '0 auto',
   },
   profileContent: {
-    padding: '30px',
+    padding: '32px',
     overflowY: 'auto',
     flex: 1,
+    background: 'linear-gradient(180deg, #ffffff 0%, #f8fbfd 100%)',
   },
   profileName: {
     fontSize: '2rem',
@@ -863,16 +893,17 @@ const styles = {
     display: 'flex',
     gap: '10px',
     justifyContent: 'center',
-    marginBottom: '30px',
+    marginBottom: '34px',
     flexWrap: 'wrap',
   },
   badge: {
-    padding: '8px 16px',
-    backgroundColor: '#e8f0fe',
+    padding: '9px 16px',
+    backgroundColor: '#eef6ff',
     color: '#0a4a7a',
-    borderRadius: '20px',
+    borderRadius: '999px',
     fontSize: '0.9rem',
     fontWeight: '600',
+    border: '1px solid #dbeafe',
   },
   detailsSection: {
     marginBottom: '30px',
@@ -987,11 +1018,12 @@ const styles = {
   detailCard: {
     backgroundColor: '#f8fafc',
     padding: '20px',
-    borderRadius: '12px',
+    borderRadius: '16px',
     display: 'flex',
     alignItems: 'center',
     gap: '15px',
     border: '1px solid #e5e7eb',
+    boxShadow: '0 6px 18px rgba(15, 23, 42, 0.04)',
   },
   detailIcon: {
     color: '#0a4a7a',
@@ -1015,8 +1047,35 @@ const styles = {
     fontSize: '1rem',
     backgroundColor: '#f8fafc',
     padding: '20px',
-    borderRadius: '12px',
+    borderRadius: '16px',
     border: '1px solid #e5e7eb',
+  },
+  skillChipRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  skillChip: {
+    padding: '9px 13px',
+    borderRadius: '999px',
+    backgroundColor: '#eef6ff',
+    color: '#0a4a7a',
+    fontWeight: '600',
+    fontSize: '0.88rem',
+    border: '1px solid #dbeafe',
+  },
+  highlightList: {
+    display: 'grid',
+    gap: '12px',
+  },
+  highlightItem: {
+    padding: '16px 18px',
+    backgroundColor: '#f8fafc',
+    border: '1px solid #e5e7eb',
+    borderRadius: '16px',
+    color: '#374151',
+    lineHeight: '1.7',
+    boxShadow: '0 6px 18px rgba(15, 23, 42, 0.04)',
   },
   photoHint: {
     color: '#4b5563',
