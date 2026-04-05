@@ -381,8 +381,6 @@ const AlumniRegistration = () => {
     }
   `;
 
-  const sections = ['Personal', 'Academic', 'Career', 'Profile'];
-
   return (
     <>
       <style>{css}</style>
@@ -404,25 +402,14 @@ const AlumniRegistration = () => {
             </div>
           </div>
 
-          {/* Visual section steps (decorative, not clickable) */}
-          <div className="ar-steps">
-            {sections.map((s, i) => (
-              <div key={s} className={`ar-step ${i === 0 ? 'active' : ''}`}>
-                <span className="ar-step-num">{i + 1}</span>
-                <span>{s}</span>
-              </div>
-            ))}
-          </div>
-
           <form onSubmit={handleSubmit}>
             <div className="ar-body">
 
               {error && <div className="ar-error"><span>⚠️</span> {error}</div>}
 
-              {/* Info tip */}
               <div className="ar-tip">
                 <span className="ar-tip-icon">ℹ️</span>
-                <span>Fill all required fields below. Your account will be reviewed by admin before activation. Fields marked <strong>*</strong> are mandatory.</span>
+                <span>Keep this simple. Add your core academic and professional details. Your registration will be reviewed by admin before activation.</span>
               </div>
 
               {/* ── Personal ── */}
@@ -519,9 +506,9 @@ const AlumniRegistration = () => {
                 </div>
               </div>
 
-              {/* ── Optional ── */}
+              {/* ── Additional ── */}
               <div className="ar-section">
-                <span className="ar-section-tag">Optional</span>
+                <span className="ar-section-tag">Additional Details</span>
                 <div className="ar-section-line" />
               </div>
               <div className="ar-grid">

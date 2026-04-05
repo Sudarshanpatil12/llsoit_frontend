@@ -3,11 +3,13 @@ import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Briefcase, GraduationCap, Mail, Phone, Linkedin, X } from 'lucide-react';
 import apiService from '../services/api';
 import { sampleAlumni } from '../data/sampleAlumni';
+import { useAuth } from '../context/AuthContext';
 
 const normalizeAlumniRecord = (alumni, index = 0) => ({
   id: alumni.id || alumni._id || `sample-${index}`,
   name: alumni.name || 'Alumni Member',
   email: alumni.email || '',
+  enrollmentNumber: alumni.enrollmentNumber || '',
   mobile: alumni.mobile || '',
   graduationYear: alumni.graduationYear || '',
   department: alumni.department || 'Not specified',
@@ -23,12 +25,16 @@ const normalizeAlumniRecord = (alumni, index = 0) => ({
 const fallbackDirectoryData = sampleAlumni.map((alumni, index) => normalizeAlumniRecord(alumni, index));
 
 const AlumniDirectory = () => {
+  const { user, userType, updateProfile, isAuthenticated } = useAuth();
   const [alumniData, setAlumniData] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDepartment, setSelectedDepartment] = useState('all');
   const [selectedYear, setSelectedYear] = useState('all');
   const [selectedAlumni, setSelectedAlumni] = useState(null);
   const [loadError, setLoadError] = useState('');
+  const [photoDraft, setPhotoDraft] = useState('');
+  const [photoSaving, setPhotoSaving] = useState(false);
+  const [photoMessage, setPhotoMessage] = useState('');
 
   useEffect(() => {
     loadAlumniData();
@@ -94,6 +100,8 @@ const AlumniDirectory = () => {
   useEffect(() => {
     if (selectedAlumni) {
       document.body.style.overflow = 'hidden';
+      setPhotoDraft(selectedAlumni.profileImage || '');
+      setPhotoMessage('');
     } else {
       document.body.style.overflow = 'auto';
     }
@@ -102,6 +110,37 @@ const AlumniDirectory = () => {
       document.body.style.overflow = 'auto';
     };
   }, [selectedAlumni]);
+
+  const isOwnProfile = Boolean(
+    selectedAlumni &&
+    isAuthenticated() &&
+    userType === 'alumni' &&
+    (
+      selectedAlumni.id === user?._id ||
+      selectedAlumni.id === user?.id ||
+      (selectedAlumni.email && user?.email && selectedAlumni.email === user.email)
+    )
+  );
+
+  const handlePhotoUpdate = async () => {
+    if (!photoDraft.trim()) {
+      setPhotoMessage('Enter a profile photo URL first.');
+      return;
+    }
+
+    setPhotoSaving(true);
+    setPhotoMessage('');
+
+    const result = await updateProfile({ profileImage: photoDraft.trim() });
+    setPhotoSaving(false);
+
+    if (!result.success) {
+      setPhotoMessage(result.error || 'Unable to submit the profile photo update.');
+      return;
+    }
+
+    setPhotoMessage(result.message || 'Profile photo update submitted for admin approval.');
+  };
 
   return (
     <div style={styles.container}>
@@ -312,6 +351,14 @@ const AlumniDirectory = () => {
                 <h3 style={styles.sectionTitle}>Contact Details</h3>
                 <div style={styles.detailGrid}>
                   <div style={styles.detailCard}>
+                    <GraduationCap size={20} style={styles.detailIcon} />
+                    <div>
+                      <div style={styles.detailLabel}>Enrollment Number</div>
+                      <div style={styles.detailValue}>{selectedAlumni.enrollmentNumber || 'Not available'}</div>
+                    </div>
+                  </div>
+
+                  <div style={styles.detailCard}>
                     <Mail size={20} style={styles.detailIcon} />
                     <div>
                       <div style={styles.detailLabel}>Email</div>
@@ -338,16 +385,40 @@ const AlumniDirectory = () => {
                   <div style={styles.detailCard}>
                     <Briefcase size={20} style={styles.detailIcon} />
                     <div>
+                      <div style={styles.detailLabel}>Current Role</div>
+                      <div style={styles.detailValue}>{selectedAlumni.jobTitle || 'Not available'}</div>
+                    </div>
+                  </div>
+                  
+                  <div style={styles.detailCard}>
+                    <Briefcase size={20} style={styles.detailIcon} />
+                    <div>
+                      <div style={styles.detailLabel}>Current Company</div>
+                      <div style={styles.detailValue}>{selectedAlumni.company || 'Not available'}</div>
+                    </div>
+                  </div>
+
+                  <div style={styles.detailCard}>
+                    <GraduationCap size={20} style={styles.detailIcon} />
+                    <div>
                       <div style={styles.detailLabel}>Department</div>
                       <div style={styles.detailValue}>{selectedAlumni.department}</div>
                     </div>
                   </div>
-                  
+
                   <div style={styles.detailCard}>
                     <GraduationCap size={20} style={styles.detailIcon} />
                     <div>
                       <div style={styles.detailLabel}>Graduation Year</div>
                       <div style={styles.detailValue}>{selectedAlumni.graduationYear}</div>
+                    </div>
+                  </div>
+
+                  <div style={styles.detailCard}>
+                    <Linkedin size={20} style={styles.detailIcon} />
+                    <div>
+                      <div style={styles.detailLabel}>LinkedIn</div>
+                      <div style={styles.detailValue}>{selectedAlumni.linkedinUrl || 'Not available'}</div>
                     </div>
                   </div>
                 </div>
@@ -358,6 +429,33 @@ const AlumniDirectory = () => {
                 <h3 style={styles.sectionTitle}>Professional Bio</h3>
                 <p style={styles.bioText}>{selectedAlumni.bio || 'No professional bio added yet.'}</p>
               </div>
+
+              {isOwnProfile && (
+                <div style={styles.bioSection}>
+                  <h3 style={styles.sectionTitle}>Profile Photo</h3>
+                  <p style={styles.photoHint}>
+                    Update your profile photo here. It will appear in the directory after admin approval.
+                  </p>
+                  <div style={styles.photoEditBox}>
+                    <input
+                      type="url"
+                      value={photoDraft}
+                      onChange={(event) => setPhotoDraft(event.target.value)}
+                      placeholder="https://your-image-url"
+                      style={styles.photoInput}
+                    />
+                    <button
+                      type="button"
+                      style={styles.photoSaveButton}
+                      onClick={handlePhotoUpdate}
+                      disabled={photoSaving}
+                    >
+                      {photoSaving ? 'Submitting...' : 'Submit Photo Update'}
+                    </button>
+                  </div>
+                  {photoMessage ? <p style={styles.photoMessage}>{photoMessage}</p> : null}
+                </div>
+              )}
 
               {/* Action Buttons */}
               <div style={styles.actionButtons}>
@@ -756,6 +854,41 @@ const styles = {
     padding: '20px',
     borderRadius: '12px',
     border: '1px solid #e5e7eb',
+  },
+  photoHint: {
+    color: '#4b5563',
+    lineHeight: '1.7',
+    marginBottom: '14px',
+  },
+  photoEditBox: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '12px',
+  },
+  photoInput: {
+    width: '100%',
+    padding: '14px 16px',
+    border: '2px solid #e5e7eb',
+    borderRadius: '12px',
+    fontSize: '15px',
+    fontFamily: "'Inter', sans-serif",
+  },
+  photoSaveButton: {
+    alignSelf: 'flex-start',
+    padding: '12px 18px',
+    backgroundColor: '#0a4a7a',
+    color: 'white',
+    border: 'none',
+    borderRadius: '10px',
+    cursor: 'pointer',
+    fontWeight: '600',
+    fontSize: '0.95rem',
+  },
+  photoMessage: {
+    marginTop: '12px',
+    color: '#0a4a7a',
+    fontWeight: '500',
+    lineHeight: '1.6',
   },
   actionButtons: {
     display: 'flex',
