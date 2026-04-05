@@ -19,10 +19,39 @@ const normalizeAlumniRecord = (alumni, index = 0) => ({
   location: alumni.location || 'Location not specified',
   bio: alumni.bio || '',
   profileImage: alumni.profileImage || '',
+  skills: Array.isArray(alumni.skills) ? alumni.skills : [],
+  experience: Array.isArray(alumni.experience) ? alumni.experience : [],
+  careerHistory: Array.isArray(alumni.careerHistory) ? alumni.careerHistory : [],
   status: alumni.status || 'approved'
 });
 
 const fallbackDirectoryData = sampleAlumni.map((alumni, index) => normalizeAlumniRecord(alumni, index));
+
+const buildExperienceSections = (alumni) => {
+  if (Array.isArray(alumni.careerHistory) && alumni.careerHistory.length) {
+    return alumni.careerHistory.map((entry, index) => ({
+      id: `${entry.company || 'company'}-${index}`,
+      company: entry.company || alumni.company || 'Company not available',
+      companyMeta: entry.location || alumni.location || 'Location not available',
+      role: entry.title || alumni.jobTitle || 'Role not available',
+      duration: entry.isCurrent
+        ? `${entry.startDate || 'Start date not added'} - Present`
+        : `${entry.startDate || 'Start date not added'} - ${entry.endDate || 'End date not added'}`,
+      summary: entry.summary || '',
+      skills: Array.isArray(alumni.skills) ? alumni.skills.slice(0, 4) : []
+    }));
+  }
+
+  return [{
+    id: `${alumni.company || 'company'}-fallback`,
+    company: alumni.company || 'Company not available',
+    companyMeta: alumni.location || 'Location not available',
+    role: alumni.jobTitle || 'Role not available',
+    duration: alumni.graduationYear ? `Batch ${alumni.graduationYear} onward` : 'Career details not added',
+    summary: alumni.bio || '',
+    skills: Array.isArray(alumni.skills) ? alumni.skills.slice(0, 4) : []
+  }];
+};
 
 const AlumniDirectory = () => {
   const { user, userType, updateProfile, isAuthenticated } = useAuth();
@@ -141,6 +170,8 @@ const AlumniDirectory = () => {
 
     setPhotoMessage(result.message || 'Profile photo update submitted for admin approval.');
   };
+
+  const selectedExperienceSections = selectedAlumni ? buildExperienceSections(selectedAlumni) : [];
 
   return (
     <div style={styles.container}>
@@ -346,9 +377,45 @@ const AlumniDirectory = () => {
                 </span>
               </div>
 
-              {/* All Details */}
               <div style={styles.detailsSection}>
-                <h3 style={styles.sectionTitle}>Contact Details</h3>
+                <h3 style={styles.sectionTitle}>Experience</h3>
+                <div style={styles.experienceStack}>
+                  {selectedExperienceSections.map((item, index) => (
+                    <div key={item.id} style={styles.experienceBlock}>
+                      <div style={styles.experienceHeader}>
+                        <div style={styles.experienceLogo}>
+                          {(item.company || 'C').slice(0, 1).toUpperCase()}
+                        </div>
+                        <div>
+                          <div style={styles.experienceCompany}>{item.company}</div>
+                          <div style={styles.experienceMeta}>{item.companyMeta}</div>
+                        </div>
+                      </div>
+
+                      <div style={styles.experienceTimeline}>
+                        <div style={styles.experienceTimelineDot} />
+                        {index !== selectedExperienceSections.length - 1 ? <div style={styles.experienceTimelineLine} /> : null}
+                      </div>
+
+                      <div style={styles.experienceContent}>
+                        <div style={styles.experienceRole}>{item.role}</div>
+                        <div style={styles.experienceDuration}>{item.duration}</div>
+                        {item.summary ? <p style={styles.experienceSummary}>{item.summary}</p> : null}
+                        {item.skills.length ? (
+                          <div style={styles.experienceSkillsRow}>
+                            {item.skills.map((skill) => (
+                              <span key={`${item.id}-${skill}`} style={styles.experienceSkillChip}>{skill}</span>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div style={styles.detailsSection}>
+                <h3 style={styles.sectionTitle}>Profile Details</h3>
                 <div style={styles.detailGrid}>
                   <div style={styles.detailCard}>
                     <GraduationCap size={20} style={styles.detailIcon} />
@@ -809,6 +876,102 @@ const styles = {
   },
   detailsSection: {
     marginBottom: '30px',
+  },
+  experienceStack: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '22px',
+  },
+  experienceBlock: {
+    display: 'grid',
+    gridTemplateColumns: 'auto 26px 1fr',
+    gap: '14px',
+    alignItems: 'start',
+    padding: '18px 0',
+    borderBottom: '1px solid #e5e7eb',
+  },
+  experienceHeader: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    minWidth: '220px',
+  },
+  experienceLogo: {
+    width: '54px',
+    height: '54px',
+    borderRadius: '14px',
+    background: 'linear-gradient(135deg, #0a4a7a 0%, #1e6ba8 100%)',
+    color: 'white',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '1.2rem',
+    fontWeight: '800',
+    flexShrink: 0,
+  },
+  experienceCompany: {
+    fontSize: '1.2rem',
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: '4px',
+  },
+  experienceMeta: {
+    color: '#6b7280',
+    fontSize: '0.95rem',
+    lineHeight: '1.6',
+  },
+  experienceTimeline: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    minHeight: '100%',
+    paddingTop: '8px',
+  },
+  experienceTimelineDot: {
+    width: '12px',
+    height: '12px',
+    borderRadius: '50%',
+    backgroundColor: '#9ca3af',
+    flexShrink: 0,
+  },
+  experienceTimelineLine: {
+    width: '2px',
+    flex: 1,
+    backgroundColor: '#d1d5db',
+    marginTop: '6px',
+  },
+  experienceContent: {
+    paddingTop: '2px',
+  },
+  experienceRole: {
+    fontSize: '1.15rem',
+    fontWeight: '700',
+    color: '#1f2937',
+    marginBottom: '6px',
+  },
+  experienceDuration: {
+    color: '#6b7280',
+    fontSize: '0.95rem',
+    marginBottom: '10px',
+  },
+  experienceSummary: {
+    color: '#4b5563',
+    lineHeight: '1.8',
+    fontSize: '0.96rem',
+    marginBottom: '12px',
+  },
+  experienceSkillsRow: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  experienceSkillChip: {
+    padding: '7px 12px',
+    borderRadius: '999px',
+    backgroundColor: '#eef6ff',
+    color: '#0a4a7a',
+    fontWeight: '600',
+    fontSize: '0.85rem',
   },
   sectionTitle: {
     fontSize: '1.3rem',
