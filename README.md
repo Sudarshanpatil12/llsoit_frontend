@@ -20,11 +20,11 @@ LegacyLink is a MERN Stack alumni networking platform developed for **SOIT, RGPV
 
 ## Team Members
 
-| Team Member     | Role                                     | Responsibilities                                                                              |
-| --------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------- |
-| Sudarshan Patil | Project Lead & Backend Developer         | Project planning, backend APIs, authentication, server logic and frontend-backend integration |
-| Soumya Ramaria | Frontend Developer & UI/UX Designer      | React components, responsive UI, wireframes, page design and API integration                  |
-| Vedansh Dwivedi | Database Manager, Tester & Documentation | Database schemas, MongoDB management, testing, bug reporting and project documentation        |
+| Team Member         | Role                                               | Responsibilities                                                                                                                                                             |
+| ------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sudarshan Patil** | **Project Lead & Backend Developer**               | Project planning, backend architecture, REST API development, authentication & authorization, server-side logic, database integration, deployment, and project coordination. |
+| **Soumya Ramaria**  | **Product Strategy, Requirement Gathering & UX**   | Requirement gathering, product strategy, user research, UX planning, wireframing, user flow design, feature planning, design validation, and documentation support.          |
+| **Add Member Name** | **Frontend Developer, Database Manager & Testing** | Frontend development, API integration, responsive UI implementation, MongoDB database management, testing, bug fixing, quality assurance, and project documentation.         |
 
 ## Project Setup
 
@@ -35,6 +35,10 @@ npm install
 npm run dev
 ```
 
+
+## Repository Description
+
+LegacyLink is a MERN Stack-based Alumni Networking Platform developed for **SOIT, RGPV Bhopal**. The platform enables students, alumni, faculty, and administrators to connect through mentorship, networking, event management, job opportunities, and real-time communication while strengthening the institute's alumni ecosystem.
 
 ## License
 
